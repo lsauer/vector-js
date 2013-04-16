@@ -1,0 +1,20 @@
+{
+  "name": "vector-js",
+  "version": "0.1.1",
+  "description": "An implementation of vectors and matrices with simple arithmetic operator usage for UInt8 numbers, in JavaScript",
+  "main": "vector-op.js",
+  "author": {
+      "name": "Lorenz Lo Sauer",
+      "email": "lorenzlosauer@gmail.com",
+      "url": "http://lsauer.com/"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/lsauer/vector-js/raw/master/LICENSE"
+  },
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/lsauer/vector-js.git"
+  },
+  "bugs": "http://github.com/lsauer/vector-js/issues",
+}

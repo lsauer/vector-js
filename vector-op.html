@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>vector-op.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>vector-op.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p><strong>vectorop:</strong> 8bit vector arithmetics that emulate simple operator overloading 
+in JavaScript, as a proof of principle. This script is intended as a tutorial!</p>
+<p><strong>@author:</strong> (c) 10/2011 by Lorenz Lo Sauer; lsauer.com<br><strong>@license:</strong> MIT-LICENSE or BSD-LICENSE<br><strong>@link:</strong> <a href="https://www.github.com/lsauer/vectorop/">https://www.github.com/lsauer/vectorop/</a><br><strong>@version:</strong> 0.1.0  </p>
+<p><strong>Background: </strong><br>By default, JS doesn&#39;t allow operator overloading but does allow capturing the value-
+coercion-function <code>stringTo</code> and <code>valueOf</code>, which converts an object to a primitive value
+Respectively, <code>toString</code> acts in the context of a string coercion/conversion.<br>If either method returns a non-primitive type, the respective other method is invoked </p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p><strong>Note:</strong><br>The code is purposefully not geared towards speed (at the gain of readability)
+for comprehensive matrix and vector functionality use &#39;glmatrix&#39;<br>Only minimal Error checking is implemented. No overflow warnings are provided.<br>Only positive values are supported &lt; 255, i.e. UInt8,
+otherwise only signed 7bit numbers would be possible
+In principle any number types could be implemented, by adapting the bit masks and bit allocations.<br>Due to certain 32bit constraints, the implemented number types are: <code>positive integer numbers R: -1 &lt; R &lt; 256</code></p>
+<p><strong>See also:</strong>  </p>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/valueOf">https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/valueOf</a></li>
+<li><a href="http://lsauer.com/2011/09/javascript-binary-to-int-hex-decimal.html">http://lsauer.com/2011/09/javascript-binary-to-int-hex-decimal.html</a></li>
+<li><a href="https://gist.github.com/lsauer/1582813">https://gist.github.com/lsauer/1582813</a> - Convert a Vector into a Matrix</li>
+<li><a href="https://github.com/toji/gl-matrix">https://github.com/toji/gl-matrix</a> - by Brandon Jones</li>
+</ul>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p><em>The above copyright notice and this permission notice shall be included in</em>
+<em>all copies or substantial portions of the Software.</em></p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h2>Global containment</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="keyword">function</span>() {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <h2>Module Setup</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Define the internal vectorop object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">var</span> vectorop = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Export the vectorop object as either a CommonJS module, or as the global object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (<span class="keyword">typeof</span> module !== <span class="string">'undefined'</span> &amp;&amp; module.exports) {
+        module.exports = vectorop;
+    } <span class="keyword">else</span> {
+        <span class="keyword">this</span>.vectorop = vectorop;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Set the vectorop version</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    vectorop.version = <span class="string">'0.1.0'</span>;
+    
+	<span class="comment">/**
+	* Utility Functions
+	*/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <h2>number utility functions</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p><code>d2b</code>: Converts a decimal to a binary representation</p>
+<pre><code>@param d {Int} #decimal number
+@return b {String} binary number representation</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.d2b = <span class="function"><span class="keyword">function</span> <span class="title">d2b</span><span class="params">(d)</span>{</span> 
+		<span class="keyword">return</span> d.toString(<span class="number">2</span>); 
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p><code>b2d</code>: Converts a binary representation to a decimal</p>
+<pre><code>@param d {String} #number in binary representation
+@return d {Int} decimal number representation</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.b2d = <span class="function"><span class="keyword">function</span> <span class="title">b2d</span><span class="params">(d)</span>{</span>
+		<span class="keyword">return</span> parseInt(d,<span class="number">2</span>);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <h2>objects utility functions</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p><code>listToMatrix</code>: converts a 1D array to a 2D array</p>
+<pre><code>@param a {Array} list of elements
+@param len {Int} number of elements in each row
+@return matrix {[[,..],[,...],...]} 2D array containing matrix elements</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.listToMatrix = <span class="function"><span class="keyword">function</span> <span class="title">Array1dTo2d</span><span class="params">(a, len)</span>{</span>
+	  <span class="keyword">var</span> b=[];
+	  <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>; i&lt;a.length; i+=len)
+		b.push( a.slice(i,i+len) );
+	  <span class="keyword">return</span> b;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p><code>matrix</code>: Converts a linear list of elements into an n x m matrix</p>
+<pre><code>@param alist {Array} linear list of elements 
+@param n {Int} #rows of the matrix
+@param m {Int} #rows of the matrix optional:true; else n=m
+@return matrix {[[,..],[,...],...]} 2D array containing matrix elements</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.matrix = <span class="function"><span class="keyword">function</span> <span class="title">matrix</span><span class="params">(alist,n,m)</span> {</span>
+		m||(m = n);
+		<span class="keyword">var</span> mat = []
+		<span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>,len=n*m;i&lt;len;i+=m)
+			mat.push(alist.slice(i,i+m))
+		<span class="keyword">return</span> mat;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p><code>list</code>: inverse operation to the function <code>matrix</code>: flattens an array</p>
+<pre><code>@param mat {Array} 2D array, representing an n x m matrix
+@return array {Array} 1D array containing vector elements</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.list = <span class="function"><span class="keyword">function</span> <span class="title">list</span><span class="params">(mat)</span>{</span>
+		<span class="keyword">return</span> (mat+<span class="string">''</span>)
+				.split(<span class="string">','</span>)
+				.map(parseFloat);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p><code>matcmpr</code>:  compares (non-strictly) two matrices and returns true or false</p>
+<pre><code>@param mat1 {Array} 1st 2d array of n x m matrix elements
+@param mat1 {Array} 2nd 2d array of n x m matrix elements, to be compared to
+@return isEq {Boolean} true is returned in the case of matrix equality</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.matcmpr = <span class="function"><span class="keyword">function</span> <span class="title">matcmpr</span><span class="params">(mat1,mat2)</span>{</span>
+		<span class="keyword">if</span>(<span class="literal">undefined</span> === mat1[<span class="number">0</span>][<span class="number">0</span>]) {
+			mat1 = [mat1]; 
+			mat2 = [mat2];
+		}
+		<span class="keyword">for</span>(i <span class="keyword">in</span> mat1)
+			<span class="keyword">for</span>(j <span class="keyword">in</span> mat1[i])
+				<span class="keyword">if</span>(mat1[i][j] != mat2[i][j])
+					<span class="keyword">return</span> <span class="literal">false</span>;
+		<span class="keyword">return</span> <span class="literal">true</span>;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h2>vector object functions</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p><em>Todo:</em></p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <ul>
+<li>Dynamic bitsize-allocation per number:</li>
+<li>Implement cutting off the number via <code>&amp;range|lower</code>, according to a dynamic bitsize per number<ul>
+<li>Alternatively: allow 16bit numbers in the case of 2D vectors</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p><em>Notes:</em></p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>The shifting operation could be refactored out into toString
+The Vector object contains the original x,y,z representation
+The z-value is ignored in a 2D vector, and thus placed beyond the 16bit position</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p><code>_Vector</code>: packs x,y,z 8bit Integers (&lt;255), into an vector object</p>
+<pre><code>@param x,y,z {Int} 8bit Integers holding coordinate values
+@return point {Int} 32bit/64bit (JS runtime dependent), Integer containing x,y,z.</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector = <span class="function"><span class="keyword">function</span> <span class="title">_Vector</span><span class="params">(x,y,z)</span> {</span>
+		<span class="keyword">var</span> point;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>allow passing arguments as an array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(<span class="number">1</span>===arguments.length &amp;&amp; Array===arguments[<span class="number">0</span>].constructor){
+			<span class="keyword">var</span>  z = arguments[<span class="number">0</span>][<span class="number">2</span>]
+				,y = arguments[<span class="number">0</span>][<span class="number">1</span>]
+				,x = arguments[<span class="number">0</span>][<span class="number">1</span>];
+		}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Todo: allocate sign to Bit 30(x),29(y), 28(z)
+initialize empty variables, as Integers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		x = (x|<span class="number">0</span>) || <span class="number">0</span>;
+		y = (y|<span class="number">0</span>) || <span class="number">0</span>;
+		z = (z|<span class="number">0</span>) || <span class="number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>allow passing arguments as single number i.e. a point?
+otherwise pack x,y,z values into <code>point</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(x &gt; <span class="number">255</span>)
+			point = x;
+		<span class="keyword">else</span>
+			point = (z&lt;<span class="xml"><span class="tag">&lt; <span class="attribute">16</span>) ^ (<span class="attribute">y</span>&lt;&lt; <span class="attribute">8</span>) ^ <span class="attribute">x</span>;	// <span class="attribute">overlay</span> <span class="attribute">ad-hoc-created</span> <span class="attribute">bitmaps</span> <span class="attribute">via</span> <span class="attribute">XOR</span>
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>assign local variables to an instance</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(<span class="keyword">this</span>){							<span class="comment">//-&gt; for readability:</span>
+			 <span class="keyword">this</span>.z = z						<span class="comment">// this.z = z&lt;&lt; 16;</span>
+			,<span class="keyword">this</span>.y = y						<span class="comment">// this.y = y&lt;&lt; 8;	</span>
+			,<span class="keyword">this</span>.x = x;					<span class="comment">// this.x = x;	</span>
+			<span class="keyword">this</span>.point = point;
+		} <span class="keyword">else</span> {
+			<span class="keyword">return</span> point;
+		}
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p><code>Vector</code>: helper function that returns an Vector instanc</p>
+<pre><code>@param x,y,z {Int} 8bit Integers holding coordinate values
+@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector = <span class="function"><span class="keyword">function</span> <span class="title">Vector</span><span class="params">(x,y,z)</span> {</span>
+		<span class="keyword">if</span>(arguments.length &gt; <span class="number">3</span>){
+			<span class="keyword">return</span> <span class="literal">null</span>;
+		}
+		<span class="keyword">var</span> vobj = <span class="keyword">new</span> vectorop._Vector(x,y,z);
+			vobj.__defineGetter__(<span class="string">'length'</span>, vectorop._Vector.prototype.len);
+
+		<span class="keyword">return</span> vobj;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p><code>isVectorInstance</code>: helper function that checks if a passed object is a Vector instance and handles errors</p>
+<pre><code>@param v {Object} obejct tested to by an instance of _Vector
+@return state {Boolean} returns true if the object is a _Vector instance</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.isVectorInstance = <span class="keyword">function</span>(v){
+		<span class="keyword">if</span>( ! (v <span class="keyword">instanceof</span> vectorop._Vector)){
+			<span class="keyword">throw</span> <span class="keyword">new</span> TypeError(<span class="string">"A Vector instance must be passed to:"</span> + arguments.callee);
+		}<span class="keyword">else</span> {
+			<span class="keyword">return</span> <span class="literal">true</span>;
+		}
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <h2>Vector: prototypal functions</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>demonstrate that <code>valueOf</code> would get precedence, if defined...</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	<span class="comment">/*	vectorop._Vector.prototype.valueOf = function() {
+	 *		console.log("valueOf was invoked" )
+	 *	}
+	 */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p><code>toString</code>: overloaded function, to pack 8bit x,y,z values into a 32bit number of the vector instance</p>
+<pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers    
+The function is mainly invoked through the &#39;+&#39; plus operator acting upon a vector instance</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.prototype.toString = <span class="keyword">function</span>() {
+	   <span class="keyword">var</span> x = <span class="keyword">this</span>.x &lt;<span class="xml"><span class="tag">&lt; <span class="attribute">16</span>;					// <span class="attribute">each</span> <span class="attribute">coordinate</span> <span class="attribute">x</span>,<span class="attribute">y</span>,<span class="attribute">z</span> <span class="attribute">is</span> <span class="attribute">allocated</span> <span class="attribute">8bit</span>, <span class="attribute">and</span> <span class="attribute">shifted</span> <span class="attribute">upwards</span>
+	   <span class="attribute">var</span> <span class="attribute">y</span> = <span class="attribute">this.y</span> &lt;&lt; <span class="attribute">8</span>;
+	   <span class="attribute">var</span> <span class="attribute">z</span> = <span class="attribute">this.z</span>;
+	   <span class="attribute">console.log</span>("<span class="attribute">Vector.toString</span> <span class="attribute">invoked</span>");
+	   <span class="attribute">return</span> <span class="attribute">x</span> + <span class="attribute">y</span> + <span class="attribute">z</span>;						//<span class="attribute">return</span> <span class="attribute">a</span> <span class="attribute">32bit</span> <span class="attribute">number</span> <span class="attribute">containing</span> <span class="attribute">x</span>,<span class="attribute">y</span>,<span class="attribute">z</span>
+	}
+	
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p><code>toString</code>: overloaded function, to unpack a 32bit number into 8bit x,y,z values of the vector instance</p>
+<pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.toString = <span class="keyword">function</span>() {
+		<span class="keyword">this</span>.z = (<span class="keyword">this</span>.point &gt;&gt; <span class="number">16</span>) &amp;<span class="number">255</span>;			<span class="comment">//byte = UInt8; 255 = "11111111" 8bit Bitmask</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>get rid of the upper bits, then shift down:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">this</span>.y = (<span class="keyword">this</span>.point &gt;&gt;  <span class="number">8</span>) &amp;<span class="number">255</span>;			<span class="comment">//alternative: var y = (this.point -= (z &lt;&lt; 16)) &gt;&gt; 8;</span>
+		<span class="keyword">this</span>.x = (<span class="keyword">this</span>.point      ) &amp;<span class="number">255</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Todo: read sign from Bit 30(x),29(y), 28(z)
+read sign-bits put at the front of the 32bits; x being closer to the Most Significant Bit position
+if( this.point &amp; (1&lt;&lt;30) ){
+this.x = -this.x;
+}
+if( this.point &amp; (1&lt;&lt;29) ){
+this.y = -this.y;
+}
+if( this.point &amp; (1&lt;&lt;28) ){
+this.z = -this.z;
+}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+		console.log( <span class="string">'[x: '</span>+<span class="keyword">this</span>.x+<span class="string">', y: '</span>+<span class="keyword">this</span>.y+<span class="string">', z: '</span>+<span class="keyword">this</span>.z+<span class="string">']'</span>);
+		<span class="keyword">return</span> <span class="keyword">this</span>.point;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p><code>mul</code>: calculates the vector product between the pertaining vector instance and a vector passed as argument</p>
+<pre><code>@param v2 {Vector} second Vector
+@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.mul = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 <span class="keyword">this</span>.x * v2.x
+			,<span class="keyword">this</span>.y * v2.y
+			,<span class="keyword">this</span>.z * v2.z
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p><code>div</code>: calculates the division between the pertaining vector instance and a vector passed as argument</p>
+<pre><code>@param v2 {Vector} second Vector
+@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.div = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 <span class="keyword">this</span>.x / v2.x
+			,<span class="keyword">this</span>.y / v2.y
+			,<span class="keyword">this</span>.z / v2.z
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p><code>dot</code>: calculates the dot product between the pertaining vector instance and a vector passed as argument</p>
+<pre><code>@param v2 {Vector} second Vector
+@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.dot = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span>   <span class="keyword">this</span>.x * v2.x 
+				+<span class="keyword">this</span>.y * v2.y 
+				+<span class="keyword">this</span>.z * v2.z;
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p><code>cross</code>: calculates the cross product between the pertaining vector instance and a vector passed as argument<br>The cross product can be defined as the determinant of a suitable 3×3 matrix (See: <em>Sarrus rule</em>)
+The cross product is anticommutative, implying negative numbers.
+Calculating the cross product with the current implementation is possible only in select cases.</p>
+<pre><code>@param v2 {Vector} second Vector
+@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.cross = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 <span class="keyword">this</span>.y * v2.z - <span class="keyword">this</span>.z * v2.y
+			,<span class="keyword">this</span>.z * v2.x - <span class="keyword">this</span>.x * v2.z
+			,<span class="keyword">this</span>.x * v2.y - <span class="keyword">this</span>.y * v2.x
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p><code>dotcross</code>: calculates the scalar triple product between the pertaining vector instance and two vector passed as argument<br>The result of the scalar triple product may be negative and can thus not be handled by the current implementation.<br>The scalar value can be thought of as the volume V of a parallelepiped, spanned by the three given vector instances </p>
+<pre><code>@param v2 {Vector} second Vector
+@param v3 {Vector} third Vector
+@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.dotcross = <span class="keyword">function</span>(v2, v3) {
+		vectorop.Vector.isVectorInstance(v2);
+		vectorop.Vector.isVectorInstance(v3);
+		<span class="keyword">return</span> (v2.cross(v3)).dot(<span class="keyword">this</span>);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p><code>abs</code>, <code>length{attr}</code>, <code>len</code>: calculates the magnitude or length of the pertaining vector instance</p>
+<pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.abs =
+	vectorop._Vector.prototype.len = <span class="keyword">function</span>() {
+		<span class="keyword">return</span> Math.sqrt( 
+			 <span class="keyword">this</span>.x * <span class="keyword">this</span>.x 
+			+<span class="keyword">this</span>.y * <span class="keyword">this</span>.y 
+			+<span class="keyword">this</span>.z * <span class="keyword">this</span>.z
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p><code>unit</code>,<code>norm</code>: calculates a normalized or unit vector of the pertaining vector instance and a passed normalization factor
+Note: By necessity, floating point numbers are required and thus <code>unit</code> is incompatible with the current implementation</p>
+<pre><code>@param v2 {Vector|Int} second Vector object or integer value as normalization factor
+@return vector {Object} _Vector object containing normalized 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.unit = 
+	vectorop._Vector.prototype.norm = <span class="keyword">function</span>(v2) {
+		<span class="keyword">var</span> len;
+		<span class="keyword">if</span>( v2 <span class="keyword">instanceof</span> Object &amp;&amp; v2.len <span class="keyword">instanceof</span> Function ){
+			len = v2.len();
+		} <span class="keyword">else</span> <span class="keyword">if</span>(<span class="keyword">typeof</span> v2 === <span class="string">'number'</span>) {
+			len = v2;
+		} <span class="keyword">else</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>no argument passed: normalize by the own length</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			len = <span class="keyword">this</span>.len();
+		}
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+		   <span class="keyword">this</span>.x / len
+		  ,<span class="keyword">this</span>.y / len
+		  ,<span class="keyword">this</span>.z / len
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p><code>unit</code>,<code>norm</code>: calculates a normalized or unit vector</p>
+<pre><code>@param v1 {Vector} Vector object to be normalized
+@param v2 {Vector|Int} second Vector object or integer value as normalization factor
+@return vector {Object} _Vector object containing normalized 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.unit = 
+	vectorop.Vector.norm = <span class="keyword">function</span>(v1, v2) {
+		<span class="keyword">var</span> len;
+		<span class="keyword">if</span>( v2 <span class="keyword">instanceof</span> Object &amp;&amp; v2.len <span class="keyword">instanceof</span> Function ){
+			len = v2.len();
+		} <span class="keyword">else</span> <span class="keyword">if</span>(<span class="keyword">typeof</span> v2 === <span class="string">'number'</span>) {
+			len = v2;
+		} <span class="keyword">else</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>no argument passed: normalize by the own length</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			len = v1.len();
+		}
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+		   v1.x / len
+		  ,v1.y / len
+		  ,v1.z / len
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p><code>unit</code>,<code>norm</code>: copies the pertaining Vector object</p>
+<pre><code>@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.copy = <span class="keyword">function</span>() {
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(<span class="keyword">this</span>.x, <span class="keyword">this</span>.y, <span class="keyword">this</span>.z);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p><code>min</code>: calculates the minimum vector coordinates between two vectors passed as argument</p>
+<pre><code>@param v1 {Vector} first Vector object
+@param v2 {Vector} second Vector object 
+@return vector {Object} _Vector object containing the minimum 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.min = <span class="keyword">function</span>(v1, v2) {
+		<span class="keyword">if</span>( ! v1 <span class="keyword">instanceof</span> vectorop._Vector &amp;&amp; ! v2 <span class="keyword">instanceof</span> vectorop._Vector ){
+			<span class="keyword">throw</span> <span class="keyword">new</span> TypeError(<span class="string">"Two Vector instances must be passed to:"</span> + arguments.callee); 
+		}
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 Math.min(v1.x, v2.x)
+			,Math.min(v1.y, v2.y)
+			,Math.min(v1.z, v2.z)
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p><code>min</code>: calculates the minimum vector coordinates of the pertaining v instance and a Vector passed as argument</p>
+<pre><code>@param v1 {Vector} first Vector object
+@param v2 {Vector} second Vector object 
+@return vector {Object} _Vector object containing the minimum 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.min = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 Math.min(<span class="keyword">this</span>.x, v2.x)
+			,Math.min(<span class="keyword">this</span>.y, v2.y)
+			,Math.min(<span class="keyword">this</span>.z, v2.z)
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p><code>max</code>: calculates the maximum vector coordinates between two Vectors passed as argument</p>
+<pre><code>@param v1 {Vector} first Vector object
+@param v2 {Vector} second Vector object 
+@return vector {Object} _Vector object containing the maximum 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.max = <span class="keyword">function</span>(v1, v2) {
+		<span class="keyword">if</span>( ! v1 <span class="keyword">instanceof</span> vectorop._Vector &amp;&amp; ! v2 <span class="keyword">instanceof</span> vectorop._Vector ){
+			<span class="keyword">throw</span> <span class="keyword">new</span> TypeError(<span class="string">"Two Vector instances must be passed to:"</span> + arguments.callee); 
+		}
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 Math.max(v1.x, v2.x)
+			,Math.max(v1.y, v2.y)
+			,Math.max(v1.z, v2.z)
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p><code>max</code>: calculates the maximum vector coordinates of the pertaining Vector instance and a Vector passed as argument</p>
+<pre><code>@param v1 {Vector} first Vector object
+@param v2 {Vector} second Vector object 
+@return vector {Object} _Vector object containing the maximum 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.max = <span class="keyword">function</span>(v2) {
+		vectorop.Vector.isVectorInstance(v2);
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 Math.max(<span class="keyword">this</span>.x, v2.x)
+			,Math.max(<span class="keyword">this</span>.y, v2.y)
+			,Math.max(<span class="keyword">this</span>.z, v2.z)
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p><code>deg</code>,<code>spherical</code>: calculates the spherical values of the pertaining Vector instance, or sets the coordinates when <code>r,p,t (radius, phi, theta)</code> is passed</p>
+<pre><code>@param r {Vector} r, the radius or radial distance 
+@param t {Vector} theta, the inclination or polar angle
+@param p {Vector} phi, the azimuth or azimuthal angle
+@return vector {Object} Object containing `r,p,t (radius, phi, theta)` or a Vector containing the 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.deg =
+	vectorop._Vector.prototype.spherical = <span class="keyword">function</span>() {
+		<span class="keyword">if</span>( <span class="number">0</span> === arguments.length ){
+			<span class="keyword">var</span> len = <span class="keyword">this</span>.len();
+			<span class="keyword">return</span> {
+				 r: len
+				,p: Math.atan2(<span class="keyword">this</span>.y, <span class="keyword">this</span>.x)		<span class="comment">/*theta*/</span>
+				,t: Math.acos(<span class="keyword">this</span>.z / len)			<span class="comment">/*phi*/</span>
+			}
+		} <span class="keyword">else</span>{
+			<span class="keyword">var</span>  x = r * Math.sin(phi) * Math.cos(the)
+				,y = r * Math.sin(phi) * Math.sin(the)
+				,z = r * Math.cos(phi);
+			
+			<span class="keyword">this</span>.point = (z&lt;<span class="xml"><span class="tag">&lt; <span class="attribute">16</span>) ^ (<span class="attribute">y</span>&lt;&lt; <span class="attribute">8</span>) ^ <span class="attribute">x</span>;	// <span class="attribute">update</span> <span class="attribute">the</span> <span class="attribute">coordinates</span> <span class="attribute">of</span> <span class="attribute">the</span> <span class="attribute">vector</span> <span class="attribute">instance</span>
+			<span class="attribute">return</span> <span class="attribute">new</span> <span class="attribute">vectorop.Vector</span>(<span class="attribute">x</span>,<span class="attribute">y</span>,<span class="attribute">z</span>);
+		}
+	}
+
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p><code>sph2cart</code>,<code>fromSpherical</code>:  calculates the carthesian coordinate values <code>x,y,z</code> of the spherical coordinates passed as <code>r,p,t (radius, phi, theta)</code></p>
+<pre><code>@param r {Vector} r, the radius or radial distance 
+@param t {Vector} theta, the inclination or polar angle
+@param p {Vector} phi, the azimuth or azimuthal angle
+@return vector {Object} _Vector object containing the maximum 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop.Vector.sph2cart = 
+	vectorop.Vector.cartesian = <span class="keyword">function</span>(r, phi, the) {
+		<span class="keyword">return</span> <span class="keyword">new</span> vectorop.Vector(
+			 r * Math.sin(phi) * Math.cos(the)
+			,r * Math.sin(phi) * Math.sin(the)
+			,r * Math.cos(phi)
+		);
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p><code>rot</code>: rotates the pertaining vector instance given the specified rotation angles of each axis<br>See: <a href="http://stackoverflow.com/questions/5081842/3d-z-y-x-rotation-of-vector">http://stackoverflow.com/questions/5081842/3d-z-y-x-rotation-of-vector</a></p>
+<pre><code>@param degx {Int} angle of rotation around the x-axis
+@param degy {Int} angle of rotation around the y-axis
+@param degz {Int} angle of rotation around the z-axis
+@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.rot = <span class="keyword">function</span>(degx,degy,degz) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Not implemented due to the current lack of floting number support</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">return</span> <span class="literal">null</span>;
+	}
+
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
