@@ -1,0 +1,501 @@
+
+<!doctype html>
+<html lang="en">
+    <head><title>vector.js - use conventional arithmetic operators on vectors and matrices ( by lo sauer </title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta http-equiv="author" content="lorenz lo sauer">
+        <link href="https://plus.google.com/107612997855711957528/" rel="publisher" />
+        <link href='http://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet' type='text/css'>
+        <link type="text/css" rel="stylesheet" href="res/css/bootstrap.css"/>
+        <link type="text/css" rel="stylesheet" href="res/css/bootstrap-responsive.css"/>
+        <link rel="shortcut icon" href="res/ico/vectorjs-favicon.ico" />
+
+        <link rel="stylesheet" href="res/css/prettify.css" />
+        <link rel="stylesheet" href="res/css/embed.css"/>
+        <style>
+	html, body {
+		margin:0px;
+		padding: 0px;	
+		font-size: 0.95em;
+	
+	}
+	body {
+		position: absolute;
+		top: 	0px;
+		left: 	0px;
+		bottom:	0px;
+		right: 	0px;
+		overflow-y: auto;
+		overflow-x: hidden;*/
+	}
+	html {
+		overflow-y: auto;
+		background: #5f5f5f url('res/img/html_bg_gradient.png') repeat-x scroll;
+	}
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+        #try-it-modal {
+            width: 768px; 
+            margin-left: -384px;
+        }
+		.container {
+			transition: all .4s linear; 
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			height:auto;	
+		}
+		.logotext {
+			font-family: 'Noto Sans', sans-serif;
+			font-weight: bold;
+			color:#fff;
+			font-size: 52px;
+			top:50px;
+			left:35px;
+			position: absolute;
+			display:inline-block;
+		}
+		.logotextarr {
+			font-family: 'Noto Sans', sans-serif;
+			font-weight: bold;
+			color:#fff;
+			font-size: 52px;
+			top:23px;
+			left:30px;
+			position: absolute;
+			display:inline-block;
+		}
+		.logotextarr:hover {
+			font-size: 38px;
+			left:30px;
+			top:25px;
+
+			transition: all .4s linear; 
+
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			cursor:pointer;
+		}
+		.logotextarrDot1 {
+			font-size: 42px;
+			top:57px;
+			left:206px;
+			-webkit-transform:rotate(45deg);
+			transition: all .4s linear; 
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			cursor:pointer;
+
+		}
+		.logotextarrDot2 {
+			font-size: 42px;
+			top:69px;
+			left:206px;
+			-webkit-transform:rotate(135deg);
+			cursor:pointer;
+		}
+		.logotextarrDot2:hover {
+			font-size: 42px;
+			left:222px;
+
+			transition: all .4s linear; 
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			cursor:pointer;
+		}
+		.resultarrow1,
+		.resultarrow2,
+		.resultarrow3,
+		.resultarrow4{
+			font-size: 32px;
+			font-weight:bold;
+			margin-top:10px;
+		}
+		.resultarrow4{ font-weight:bold }
+		.forkicon{
+			position: absolute;
+			margin: 2px;
+			margin-top: -40px;
+			margin-left: -37px;
+			width:32px;
+			height:32px;
+			background-image:url('res/img/johnny_automatic_NPS_map_pictographs_part_28.thumb(CBYSA).png');
+			background-position: center;
+			background-repeat:no-repeat;
+			background-size: 100%;
+
+			/*animate*/
+			transition: all .4s linear; 
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			cursor:pointer;
+		}
+		.forkicon-hover{
+			margin-top: 4px;
+
+			transition: all .4s linear; 
+			-webkit-transition: all .4s linear;	
+			-o-transition: all .4s linear;	
+			-moz-transition: all .4s linear;
+			-ms-transition: all .4s linear;
+			cursor:pointer;
+
+		}
+		.carousel {
+			margin-top: 92px;
+		}
+		.container { 
+		position:relative;
+		min-height:90%;
+		line-height: 25px;
+		}
+		/*Scrollbar design*/
+		::-webkit-scrollbar{
+		width:10px; height: 10px;
+		
+		}
+		::-webkit-scrollbar-button:start:decrement,
+		::-webkit-scrollbar-button:end:increment  {
+		 height: 10px;
+		 display: block;
+		 background-color: #2b2b2b;
+		border-color: #3b3b3b;
+		border-radius: 10px;
+		-webkit-border-radius: 10px;
+		 }
+		::-webkit-scrollbar-track-piece  {
+		 background-color: #3b3b3b;
+		 -webkit-border-radius: 6px;
+		 }
+		::-webkit-scrollbar-thumb:vertical {
+		 height: 50px;
+		 background-color: #666;
+		 border: 1px solid #eee;
+		 -webkit-border-radius: 6px;
+		 }
+		 select.vectorop {
+			width: 50px;	 
+		}
+		.carousel-control { 
+			top: 200px; 
+		}
+		.in-vector {}
+		
+		input:required:invalid, input:focus:invalid, textarea:required:invalid, textarea:focus:invalid {
+			background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAT1JREFUeNpi/P//PwMpgImBRMACY/x7/uDX39sXt/67cMoDyOVgMjBjYFbV/8kkqcCBrIER5KS/967s+rmkXxzI5wJiRSBm/v8P7NTfHHFFl5mVdIzhGv4+u///x+xmuAlcdXPB9KeqeLgYd3bDU2ZpRRmwH4DOeAI07QXIRKipYPD35184/nn17CO4p/+cOfjl76+/X4GYAYThGn7/g+Mfh/ZZwjUA/aABpJVhpv6+dQUjZP78Z0YEK7OezS2gwltg64GmfTu6i+HL+mUMP34wgvGvL78ZOEysf8M1sGgZvQIqfA1SDAL8iUUMPIFRQLf+AmMQ4DQ0vYYSrL9vXDz2sq9LFsiX4dLRA0t8OX0SHKzi5bXf2HUMBVA0gN356N7p7xdOS3w5fAgcfNxWtn+BJi9gVVBOQfYPQIABABvRq3BwGT3OAAAAAElFTkSuQmCC);
+		background-position:right 33%;
+		background-repeat:no-repeat;
+		box-shadow:none
+		}
+		input:required:valid, textarea:required:valid {
+			background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZZJREFUeNpi/P//PwMpgImBRMAy58QshrNPTzP8+vOLIUInisFQyYjhz98/DB9/fmT48/+35v7H+8KNhE2+WclZd+G0gZmJmYGThUNz1fUVMZtvbWT59eUXG9wGZIWMUPj993eJ5VeWxuy8veM/CzPL3yfvH/9H0QBSBDYZyOVm4mGYfn6q4cory5lYmFh+MrEwM/76/YsR7mk2ZjbWP///WP37/y8cqIDhx58fjvtu7XV6//ndT34G/v8FasUsDjKO/+A2PP3wpGLd+TVsfOz8XH6KAT+nHpokcu7h6d9q/BoMxToVbBYqlt9///+1GO4/WVdpXqY/zMqXn13/+vTjI9mj94/y//v9/3e9ZRObvYbDT0Y2xnm///x+wsfHB3GSGLf41jb3rv0O8nbcR66d+HPvxf2/+YZFTHaqjl8YWBnm/vv37yly5LL8+vuLgYuVa3uf/4T/Kd8SnSTZpb6FGUXwcvJxbAPKP2VkZESNOBDx8+9PBm4OwR1TwmYwcfzjsBUQFLjOxs52A2YyKysrXANAgAEA7buhysQuIREAAAAASUVORK5CYII=);
+			background-position:right 33%;
+			background-repeat:no-repeat
+		}
+		input::-webkit-input-placeholder {
+			color:#ababab
+		}
+		input:-moz-placeholder {
+			color:#ababab
+		}
+		
+		fieldset span {
+			display:block;
+			margin:0 0 4px 0!important;
+			padding:0
+		}
+		#calcResult {
+			/*-webkit-box-shadow: inset 0 2px 2px rgba(77, 156, 33, 0.075);*/
+		}
+		#tablecalc tr td {
+			vertical-align: middle;
+		}
+        </style>
+    
+<script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+        s.type = 'text/javascript';
+        s.async = true;
+        s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+</script>
+
+    </head>
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner" style="min-height: 95px;">
+
+        	<div class="logotext">Vector&nbsp;&nbsp;&nbsp;js</div>
+            <div class="logotext logotextarr">&rarr;</div>
+            <div class="logotext logotextarrDot1">&harr;</div>
+            <div class="logotext logotextarrDot2">&harr;</div>
+            <div class="container" style="z-index:1; transition: all .4s linear; -webkit-transition: all .4s linear;">
+            <a id="menu-forkit" class="brand" href="https://github.com/lsauer/vector-js/tree/master">fork-it</a>
+            <div class="nav-collapse collapse">
+                <div class="forkicon" style=""></div>
+                <ul class="nav">
+                <li class=""><a href="#" onClick="$('.carousel').carousel(0); this.parentNode.className='active';">Demo</a></li>
+                <li class=""><a href="#" onClick="$('.carousel').carousel(1);">Intro</a></li>
+                <li class=""><a href="#" onClick="$('.carousel').carousel(2);">Code</a></li>
+                <li class=""><a id="try-it" href="#" onClick="$('#myModal').modal();">About</a></li>
+                </ul>
+            </div>
+            </div>
+        </div>
+        </div>
+
+<div id="myCarousel" class="carousel slide">
+  <ol class="carousel-indicators">
+    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+    <li data-target="#myCarousel" data-slide-to="1"></li>
+    <li data-target="#myCarousel" data-slide-to="2"></li>
+  </ol>
+  <!-- Carousel items -->
+  <div class="carousel-inner">
+    <div class="active item">
+
+        <div class="container">
+                             
+      <p><a href="http://vector-js.appspot.com"><strong>vector.js</strong></a> lets you apply standard <code class="prettyprint lang-javascript" style="display:inline-block;">+-/*</code> arithmetic operators on vectors just as you would with simple numbers in JavaScript. <br>
+        The project serves as a template to demonstrate how to emulate overloading of JavaScript operators. These operators can be applied to your own JavaScript objects.</p>
+
+        
+            <h2>Ad hoc</h2>
+            <div class="synopsis">
+<pre class="prettyprint lang-html"># Embed the file lsauer/vector-js/vector-op.js
+&lt;script type=&quot;text/javascript&quot; src=&quot;http://lsauer.github.com/vector-js/vector-op.js&quot;&gt;&lt;/script&gt;
+</pre>
+
+<!-- example{ -->
+<div class="vector-js-gist">
+<div class="gist-file">
+    <div class="gist-data">
+      <ul>
+        <li>
+        <p>Create a new vector</p>
+        <pre class="prettyprint lang-javascript">    a=new vectorop.Vector(4, 10, 100)
+    +a   //invoke a.toString();
+    //> [x: 4, y: 10, z: 100]
+    //> 6556164</pre>
+      </li>
+  </ul>
+    <ul>
+      <li>
+        <p>Perform basic vector arithmetics</p>
+        <pre class="prettyprint lang-javascript">    var a = vectorop.Vector(0, 3, 0);
+    var b = vectorop.Vector(2, 0, 1);
+    var c = vectorop.Vector(1, 0, 1);
+    var d = vectorop.Vector(a + b - c);
+    +d
+    //> [x: 1, y: 3, z: 0]
+    
+    var scalarf = 1.3;
+    var e = vectorop.Vector(d * scalarf);
+    delete e; // delete the vector instance 'e'
+    
+    var a = new vectorop.Vector(10, 20, 30);
+    var b = new vectorop.Vector(a/10);
+    +b
+    //> [x: 1, y: 2, z: 3] </pre>
+      </li>
+    </ul>
+    </div>
+    
+              <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" onClick="$('#tryit-modal').modal();">Try it now!</button>
+<br>
+            <h2>Source</h2>
+            <p><a href="http://github.com/lsauer/vector-js">http://github.com/lsauer/vector-js</a></p>
+
+            <h2>Author</h2>
+            <a href="http://github.com/robertkrimen">Lorenz Lo Sauer</a>
+        &lt;<a href="mailto:lorenzlosauer(AT)gmail.com">lorenzlosauer (AT) gmail.com</a>&gt; 
+
+        <!-- AddThis Button BEGIN -->
+        <a class="addthis_button" href="http://www.addthis.com/bookmark.php?v=300&amp;pubid=ra-4e809cc4494aaf1c"><img src="http://s7.addthis.com/static/btn/v2/lg-share-en.gif" width="125" height="16" alt="Bookmark and Share" style="border:0"/></a>
+        <script type="text/javascript">var addthis_config = {"data_track_addressbar":true};</script>
+        <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4e809cc4494aaf1c"></script>
+        <!-- AddThis Button END -->
+        <br/>
+		<br/>
+
+</div>
+</div>
+<!-- } -->
+
+</div>
+
+</div>
+</div>
+<div class="item">
+
+<div class="container">
+
+            <h2>Introduction</h2>
+            <p>Operators in JavaScript actually correspond to native JavaScript classes, yet overloading proposals were rejected due to warranted browser security concerns. The Addition operator for instance internally calls a <code class="prettyprint lang-js">prototype['+']</code> method.</p><br>
+<p> In the case of a Number object the function  
+            <code class="prettyprint lang-js">Number.prototype['+']  </code> is invoked,
+             to perform number-addition, and in the case of a string, 
+      <code class="prettyprint lang-js">String.prototype['+']  </code>
+        performs string concatenation. Adobe <a href="http://www.adobe.com/devnet/scripting.html">ExtendScript</a> actually allows straightforward operator overloading in this described manner. JavaScript does not.</p>
+            <p>Available still, is the capture and manipulation of implicit type coercion invocation via <code>valueOf</code> and <code>stringTo</code>. ,Implicitly for instance during the <code>==</code> operator, and explicitly , for instance during the use of the <code>+</code>-operator,</p>
+            <p>In order to emulate operator overloading with complex (JSON) objects, information has to be bit-serialized or packed, and conversly, unpacked to retain full JavaScript objects. This is demonstrated in vector.js as a boiler-plate, ready to be adapted to individual operator-usage needs.</p>
+            <p>For instance, a typical scenario where emulated operator overloading is helpfu,l are JavaScript <a href="http://en.wikipedia.org/wiki/Read–eval–print_loop">Read–eval–print loops</a>, or REPLs for short.</p>
+ 
+            <h2>Usage</h2>
+
+        <p>Given a Vector instance <code>myvector</code>, created via <code>myvector = vectorop.Vector(1,2,3);</code>, you can:<br>
+    Use the <code>myvector.length</code>  attribute to get the vector's magnitude</p>
+            <table class="table table-striped table-bordered table-condensed">
+                <tr>
+                    <td class="code"><code>myvector.unit()</code></td>
+                    <td>Calculates the unit vector</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.div(v2)</code><br>
+                  <code>myvector.mul(v2)</code></td>
+                    <td>Divides, respectively multiplies the vector instance with a vector instance passed as argument</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.dot(v2)</code></td>
+                    <td>Calculates the dot product</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.cross(v2)</code></td>
+                    <td>Calculates the cross product</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.dotcross(v2,v3)</code></td>
+                    <td>Calculates the scalar triple product</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.toString(true</code>)</td>
+                    <td>Provides a pretty print output of the vector instance</td>
+                </tr>
+            </table>
+
+            <p>Use the <code>r,p,t</code> attributes of the <code>myvector.spherical()</code> function to get spherical coordinates in radians</p>
+            <table class="table table-striped table-bordered table-condensed">
+                <tr>
+                    <td class="code"><code>myvector.spherical()</code></td>
+                    <td>Returns the the magnitude <code>r</code>, phi <code>p</code> and theta <code>t</code> of the vector instance.</td>
+                </tr>
+                <tr>
+                    <td class="code"><code>myvector.spherical(r,p,t)</code></td>
+                    <td>Sets the vector instance to the given spherical values.</td>
+                </tr>
+            </table>
+            <p>See the Code-section for more information about all functions.</p>
+
+      <p>Syntax highlighting by <a href="http://google-code-prettify.googlecode.com">google-code-prettify</a></p>
+
+
+        </div>
+       
+       </div>
+    <div class="item">
+        <div class="container">
+        <iframe style="border:1px; width:98%; height:90%;" src="http://lsauer.github.com/vector-js/vector-op.html">iframe</iframe>    
+        </div>
+    </div>
+  </div>
+  <!-- Carousel nav -->
+  <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+  <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+</div>
+
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">About vector.js</h3>
+  </div>
+  <div class="modal-body">
+    <p>Created by Lorenz Lo Sauer (<a href="https://twitter.com/sauerlo" rel="_newWindow">@sauerlo</a>). MIT license applies.<br>
+<a href="https://www.paywithatweet.com/pay/?id=96a7810615d78866988996653311a583" rel="_newWindow">Download the demo code</a> or <a href="https://plus.google.com/107612997855711957528/posts" rel="_newWindow">leave me a comment</a>.</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+<!-- END Modal -->
+
+<!-- Modal -->
+<div id="tryit-modal" class="modal hide fade" tabindex="-1">
+    <div class="modal-body">
+        <div style="margin: 0 auto;">
+        <h2>Calculate a UInt8 Vector:</h2>
+            <form action="#">
+            <table id="tablecalc" class="table table-striped table-bordered table-condensed" width="100%">
+              <tr>
+                <td><div class="resultarrow1">&rarr;</div></td>
+                <td>1st Vector</td>
+                <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector1" class="in-vector" type="text" value="1,2,3" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td><div class="resultarrow2">&rarr;</div></td>
+                <td>2nd Vector</td>
+                <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector2" class="in-vector" type="text" value="4,5,10" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td><div class="resultarrow3">&rarr;</div></td>
+                <td>3rd Vector</td>
+                <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector3" class="in-vector" type="text" value="8,54,22" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Scalar Factor</td>
+                <td><select class="vectorop"><option>*</option><option>/</option></select><input id="testscalar" class="in-vector" type="text" value="2" pattern="([0-9]{1,2})" style="width:40px;" required></td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td><div class="resultarrow4">&rarr;</div></td>
+                <td><strong>Result</strong></td>
+                <td><input id="calcResult" type="text" value=""></td>
+                <td>&nbsp;</td>
+              </tr>
+            </table>
+            <div class="script">
+            </div>
+            <div class="output"></div>
+            </form>
+        </div>
+    <div class="alert alert-info" style="margin: 1px;">Note: If an overflow occurs during any operation, due to a number outside of the <code>UInt8</code>-range: <code>+0 to +255</code>, values will be errant.</div>
+        
+    </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+
+</div>
+<!-- END Modal -->
+
+<script type="text/javascript" src="res/js/jquery.js"></script>
+<script type="text/javascript" src="res/js/bootstrap.js"></script>
+<script type="text/javascript" src="vector-op.js"></script>
+<script type="text/javascript" src="res/js/index.js"></script>
+<script type="text/javascript" src="res/js/prettify.js"></script>
+<script type="text/javascript">prettyPrint();</script>
+<script type="text/javascript">
+    var APP_BASE="http://metgate.org";
+</script>
+
+    </body>
+</html>
