@@ -5,7 +5,7 @@ vector-js
 The module emulates operator overloading in JavaScript and show its limitations in the context of an included tutorial and well documented sources.  
 
 
-Check out the [documentation](https://github.com/lsauer/vector-js/vecto-op.html) to learn more about using and 
+Check out the [documentation](http://lsauer.github.com/vector-js/vector-op.html) to learn more about using and 
 extending *vector-js*
 
 ## Demo
