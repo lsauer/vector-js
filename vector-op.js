@@ -5,7 +5,7 @@
 	// **@author:** (c) 10/2011 by Lorenz Lo Sauer; lsauer.com  
 	// **@license:** MIT-LICENSE or BSD-LICENSE  
 	// **@link:** https://www.github.com/lsauer/vectorop/  
-	// **@version:** 0.1.0  
+	// **@version:** 0.1.1  
 	//
 	// **Background: **  
 	// By default, JS doesn't allow operator overloading but does allow capturing the value-
@@ -23,7 +23,7 @@
 	// Due to certain 32bit constraints, the implemented number types are: `positive integer numbers R: -1 < R < 256`
 	//
 	//
-	// **Todo:**  
+	// **Todo/Maybe:**  
 	// - Allow negative 8bit numbers
 	// - Add examples for other operators
 	// - Implement a general purpose 'object to 64bit serialization'
@@ -64,7 +64,7 @@
     }
     
     // Set the vectorop version
-    vectorop.version = '0.1.0';
+    vectorop.version = '0.1.1';
 
 	/**
 	* CONSTANTS
@@ -173,24 +173,38 @@
 	// 	@param x,y,z {Int} 8bit Integers holding coordinate values
 	// 	@return point {Int} 32bit/64bit (JS runtime dependent), Integer containing x,y,z.
 	vectorop._Vector = function _Vector(x,y,z) {
-		var  point;
+		var  point, signx, signy, signz;
 		// allow passing arguments as an array
 		if(x instanceof Array){
 				 z = x[2]
 				,y = x[1]
 				,x = x[0]; //initial array `x` is now unreferenced
 		}
-		//Todo: allocate sign to Bit 30(x),29(y), 28(z)
+		//store the signs
+
+		signx = (x < 0)  ? 1 : 0;  //alternative: Number( x < 0)
+		signy = (y < 0)  ? 1 : 0;
+		signz = (z < 0)  ? 1 : 0;
+
 		//initialize empty variables, as Integers
-		x = (x|0) || 0;
-		y = (y|0) || 0;
-		z = (z|0) || 0;
-		// allow passing arguments as single number i.e. a point?
-		// otherwise pack x,y,z values into `point`
-		if(x > 255)
-			point = x;
-		else
-			point = (z<< 16) ^ (y<< 8) ^ x;	// overlay ad-hoc-created bitmaps via XOR
+		var _x = Math.abs( (x|0) || 0 );
+		var _y = Math.abs( (y|0) || 0 );
+		var _z = Math.abs( (z|0) || 0 );
+
+		// allow passing arguments as single number i.e. a `point`
+		// with three argument values passed, pack the absolute x,y,z values into a `point`
+		var bit24mask = (1 << 24)-1;
+		if(_x > 255){
+			point = _x & bit24mask;					// as the point is 24bit, cut it off with a 24bitmask
+		}else{
+			point = (_z << 16) ^ (_y << 8) ^ _x;	// overlay ad-hoc-created bitmasks via XOR
+		}
+		//Todo: allocate sign to Bit 30(x),29(y), 28(z)
+		//pack the signs into the point
+		point |= (signx << 30);
+		point |= (signy << 29);
+		point |= (signz << 28);
+		
 		// assign local variables to an instance
 		if(this){							//-> for readability:
 			 this.z = z						// this.z = z<< 16;
@@ -255,21 +269,22 @@
 	// 	@param isRetstring {Bool} when set to true, a pretty-printed string is returned rather than a bit-serialized number/point
 	// 	@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers
 	vectorop._Vector.prototype.toString = function(isRetstring) {
-		this.z = (this.point >> 16) &255;			//byte = UInt8; 255 = "11111111" 8bit Bitmask
+		var bit24mask = (1 << 24)-1;							//alternative: Math.pow(2,24) - 1
+		this.z = ((this.point & bit24mask) >> 16) &255;			//byte = UInt8; 255 = "11111111" 8bit Bitmask
 													//get rid of the upper bits, then shift down:
-		this.y = (this.point >>  8) &255;			//alternative: var y = (this.point -= (z << 16)) >> 8;
-		this.x = (this.point      ) &255;
+		this.y = ((this.point & bit24mask) >>  8) &255;			//alternative: var y = (this.point -= (z << 16)) >> 8;
+		this.x = ((this.point & bit24mask)     ) &255;
 		//Todo: read sign from Bit 30(x),29(y), 28(z)
 		//read sign-bits put at the front of the 32bits; x being closer to the Most Significant Bit position
-		//if( this.point & (1<<30) ){
-		//	this.x = -this.x;
-		//}
-		//if( this.point & (1<<29) ){
-		//	this.y = -this.y;
-		//}
-		//if( this.point & (1<<28) ){
-		//	this.z = -this.z;
-		//}
+		if( this.point & (1<<30) ){
+			this.x = -this.x;
+		}
+		if( this.point & (1<<29) ){
+			this.y = -this.y;
+		}
+		if( this.point & (1<<28) ){
+			this.z = -this.z;
+		}
 		var retstring = '[x: '+this.x+', y: '+this.y+', z: '+this.z+']';
 		if( typeof isRetstring !== "undefined" && true === Boolean(isRetstring) ){
 			return retstring;
