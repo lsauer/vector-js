@@ -29,7 +29,7 @@
               </div>
               <p><strong>vectorop:</strong> 8bit vector arithmetics that emulate simple operator overloading 
 in JavaScript, as a proof of principle. This script is intended as a tutorial!</p>
-<p><strong>@author:</strong> (c) 10/2011 by Lorenz Lo Sauer; lsauer.com<br><strong>@license:</strong> MIT-LICENSE or BSD-LICENSE<br><strong>@link:</strong> <a href="https://www.github.com/lsauer/vectorop/">https://www.github.com/lsauer/vectorop/</a><br><strong>@version:</strong> 0.1.0  </p>
+<p><strong>@author:</strong> (c) 10/2011 by Lorenz Lo Sauer; lsauer.com<br><strong>@license:</strong> MIT-LICENSE or BSD-LICENSE<br><strong>@link:</strong> <a href="https://www.github.com/lsauer/vectorop/">https://www.github.com/lsauer/vectorop/</a><br><strong>@version:</strong> 0.1.1  </p>
 <p><strong>Background: </strong><br>By default, JS doesn&#39;t allow operator overloading but does allow capturing the value-
 coercion-function <code>stringTo</code> and <code>valueOf</code>, which converts an object to a primitive value
 Respectively, <code>toString</code> acts in the context of a string coercion/conversion.<br>If either method returns a non-primitive type, the respective other method is invoked </p>
@@ -49,6 +49,9 @@ Respectively, <code>toString</code> acts in the context of a string coercion/con
 for comprehensive matrix and vector functionality use &#39;glmatrix&#39;<br>Only minimal Error checking is implemented. No overflow warnings are provided.<br>Only positive values are supported &lt; 255, i.e. UInt8,
 otherwise only signed 7bit numbers would be possible
 In principle any number types could be implemented, by adapting the bit masks and bit allocations.<br>Due to certain 32bit constraints, the implemented number types are: <code>positive integer numbers R: -1 &lt; R &lt; 256</code></p>
+<p><strong>Todo/Maybe:</strong><br>- Allow negative 8bit numbers
+- Add examples for other operators
+- Implement a general purpose &#39;object to 64bit serialization&#39;</p>
 <p><strong>See also:</strong>  </p>
 <ul>
 <li><a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/valueOf">https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/valueOf</a></li>
@@ -142,8 +145,14 @@ furnished to do so, subject to the following conditions:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    vectorop.version = <span class="string">'0.1.0'</span>;
+            <div class="content"><div class='highlight'><pre>    vectorop.version = <span class="string">'0.1.1'</span>;
+
+	<span class="comment">/**
+	* CONSTANTS
+	*/</span>
     
+	vectorop.RADIAN = <span class="number">57.2957795</span>;
+	
 	<span class="comment">/**
 	* Utility Functions
 	*/</span></pre></div></div>
@@ -398,7 +407,7 @@ The z-value is ignored in a 2D vector, and thus placed beyond the 16bit position
             </div>
             
             <div class="content"><div class='highlight'><pre>	vectorop._Vector = <span class="function"><span class="keyword">function</span> <span class="title">_Vector</span><span class="params">(x,y,z)</span> {</span>
-		<span class="keyword">var</span> point;</pre></div></div>
+		<span class="keyword">var</span>  point, signx, signy, signz;</pre></div></div>
             
         </li>
         
@@ -413,10 +422,10 @@ The z-value is ignored in a 2D vector, and thus placed beyond the 16bit position
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(<span class="number">1</span>===arguments.length &amp;&amp; Array===arguments[<span class="number">0</span>].constructor){
-			<span class="keyword">var</span>  z = arguments[<span class="number">0</span>][<span class="number">2</span>]
-				,y = arguments[<span class="number">0</span>][<span class="number">1</span>]
-				,x = arguments[<span class="number">0</span>][<span class="number">1</span>];
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(x <span class="keyword">instanceof</span> Array){
+				 z = x[<span class="number">2</span>]
+				,y = x[<span class="number">1</span>]
+				,x = x[<span class="number">0</span>]; <span class="comment">//initial array `x` is now unreferenced</span>
 		}</pre></div></div>
             
         </li>
@@ -428,14 +437,14 @@ The z-value is ignored in a 2D vector, and thus placed beyond the 16bit position
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Todo: allocate sign to Bit 30(x),29(y), 28(z)
-initialize empty variables, as Integers</p>
+              <p>store the signs</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>		x = (x|<span class="number">0</span>) || <span class="number">0</span>;
-		y = (y|<span class="number">0</span>) || <span class="number">0</span>;
-		z = (z|<span class="number">0</span>) || <span class="number">0</span>;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+		signx = (x &lt; <span class="number">0</span>)  ? <span class="number">1</span> : <span class="number">0</span>;  <span class="comment">//alternative: Number( x &lt; 0)</span>
+		signy = (y &lt; <span class="number">0</span>)  ? <span class="number">1</span> : <span class="number">0</span>;
+		signz = (z &lt; <span class="number">0</span>)  ? <span class="number">1</span> : <span class="number">0</span>;</pre></div></div>
             
         </li>
         
@@ -446,16 +455,13 @@ initialize empty variables, as Integers</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>allow passing arguments as single number i.e. a point?
-otherwise pack x,y,z values into <code>point</code></p>
+              <p>initialize empty variables, as Integers</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>(x &gt; <span class="number">255</span>)
-			point = x;
-		<span class="keyword">else</span>
-			point = (z&lt;<span class="xml"><span class="tag">&lt; <span class="attribute">16</span>) ^ (<span class="attribute">y</span>&lt;&lt; <span class="attribute">8</span>) ^ <span class="attribute">x</span>;	// <span class="attribute">overlay</span> <span class="attribute">ad-hoc-created</span> <span class="attribute">bitmaps</span> <span class="attribute">via</span> <span class="attribute">XOR</span>
-</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">var</span> _x = Math.abs( (x|<span class="number">0</span>) || <span class="number">0</span> );
+		<span class="keyword">var</span> _y = Math.abs( (y|<span class="number">0</span>) || <span class="number">0</span> );
+		<span class="keyword">var</span> _z = Math.abs( (z|<span class="number">0</span>) || <span class="number">0</span> );</pre></div></div>
             
         </li>
         
@@ -465,6 +471,48 @@ otherwise pack x,y,z values into <code>point</code></p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>allow passing arguments as single number i.e. a <code>point</code>
+with three argument values passed, pack the absolute x,y,z values into a <code>point</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">var</span> bit24mask = (<span class="number">1</span> &lt;<span class="xml"><span class="tag">&lt; <span class="attribute">24</span>)<span class="attribute">-1</span>;
+		<span class="attribute">if</span>(<span class="attribute">_x</span> &gt;</span> 255){
+			point = _x &amp; bit24mask;					// as the point is 24bit, cut it off with a 24bitmask
+		}else{
+			point = (_z <span class="tag">&lt;<span class="title">&lt;</span> <span class="attribute">16</span>) ^ (<span class="attribute">_y</span> &lt;&lt; <span class="attribute">8</span>) ^ <span class="attribute">_x</span>;	// <span class="attribute">overlay</span> <span class="attribute">ad-hoc-created</span> <span class="attribute">bitmasks</span> <span class="attribute">via</span> <span class="attribute">XOR</span>
+		}
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Todo: allocate sign to Bit 30(x),29(y), 28(z)
+pack the signs into the point</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		point |= (signx &lt;<span class="xml"><span class="tag">&lt; <span class="attribute">30</span>);
+		<span class="attribute">point</span> |= (<span class="attribute">signy</span> &lt;&lt; <span class="attribute">29</span>);
+		<span class="attribute">point</span> |= (<span class="attribute">signz</span> &lt;&lt; <span class="attribute">28</span>);
+		
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>assign local variables to an instance</p>
 
@@ -483,11 +531,11 @@ otherwise pack x,y,z values into <code>point</code></p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p><code>Vector</code>: helper function that returns an Vector instanc</p>
 <pre><code>@param x,y,z {Int} 8bit Integers holding coordinate values
@@ -499,8 +547,22 @@ otherwise pack x,y,z values into <code>point</code></p>
 		<span class="keyword">if</span>(arguments.length &gt; <span class="number">3</span>){
 			<span class="keyword">return</span> <span class="literal">null</span>;
 		}
-		<span class="keyword">var</span> vobj = <span class="keyword">new</span> vectorop._Vector(x,y,z);
-			vobj.__defineGetter__(<span class="string">'length'</span>, vectorop._Vector.prototype.len);
+		<span class="keyword">var</span> vobj = <span class="keyword">new</span> vectorop._Vector(x,y,z);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>define attribute-like functions</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			vobj.__defineGetter__(<span class="string">'length'</span>, vectorop._Vector.prototype.len);
 
 		<span class="keyword">return</span> vobj;
 	}</pre></div></div>
@@ -508,11 +570,11 @@ otherwise pack x,y,z values into <code>point</code></p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p><code>isVectorInstance</code>: helper function that checks if a passed object is a Vector instance and handles errors</p>
 <pre><code>@param v {Object} obejct tested to by an instance of _Vector
@@ -531,11 +593,11 @@ otherwise pack x,y,z values into <code>point</code></p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <h2>Vector: prototypal functions</h2>
 
@@ -544,11 +606,11 @@ otherwise pack x,y,z values into <code>point</code></p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>demonstrate that <code>valueOf</code> would get precedence, if defined...</p>
 
@@ -562,11 +624,11 @@ otherwise pack x,y,z values into <code>point</code></p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p><code>toString</code>: overloaded function, to pack 8bit x,y,z values into a 32bit number of the vector instance</p>
 <pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers    
@@ -587,72 +649,99 @@ The function is mainly invoked through the &#39;+&#39; plus operator acting upon
         </li>
         
         
-        <li id="section-31">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
-              </div>
-              <p><code>toString</code>: overloaded function, to unpack a 32bit number into 8bit x,y,z values of the vector instance</p>
-<pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.toString = <span class="keyword">function</span>() {
-		<span class="keyword">this</span>.z = (<span class="keyword">this</span>.point &gt;&gt; <span class="number">16</span>) &amp;<span class="number">255</span>;			<span class="comment">//byte = UInt8; 255 = "11111111" 8bit Bitmask</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-32">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
-              </div>
-              <p>get rid of the upper bits, then shift down:</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>		<span class="keyword">this</span>.y = (<span class="keyword">this</span>.point &gt;&gt;  <span class="number">8</span>) &amp;<span class="number">255</span>;			<span class="comment">//alternative: var y = (this.point -= (z &lt;&lt; 16)) &gt;&gt; 8;</span>
-		<span class="keyword">this</span>.x = (<span class="keyword">this</span>.point      ) &amp;<span class="number">255</span>;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-33">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
-              </div>
-              <p>Todo: read sign from Bit 30(x),29(y), 28(z)
-read sign-bits put at the front of the 32bits; x being closer to the Most Significant Bit position
-if( this.point &amp; (1&lt;&lt;30) ){
-this.x = -this.x;
-}
-if( this.point &amp; (1&lt;&lt;29) ){
-this.y = -this.y;
-}
-if( this.point &amp; (1&lt;&lt;28) ){
-this.z = -this.z;
-}</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>
-		console.log( <span class="string">'[x: '</span>+<span class="keyword">this</span>.x+<span class="string">', y: '</span>+<span class="keyword">this</span>.y+<span class="string">', z: '</span>+<span class="keyword">this</span>.z+<span class="string">']'</span>);
-		<span class="keyword">return</span> <span class="keyword">this</span>.point;
-	}</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p><code>toString</code>: overloaded function, to unpack a 32bit number into 8bit x,y,z values of the vector instance</p>
+<pre><code>@param isRetstring {Bool} when set to true, a pretty-printed string is returned rather than a bit-serialized number/point
+@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.toString = <span class="keyword">function</span>(isRetstring) {
+		<span class="keyword">var</span> bit24mask = (<span class="number">1</span> &lt;<span class="xml"><span class="tag">&lt; <span class="attribute">24</span>)<span class="attribute">-1</span>;							//<span class="attribute">alternative:</span> <span class="attribute">Math.pow</span>(<span class="attribute">2</span>,<span class="attribute">24</span>) <span class="attribute">-</span> <span class="attribute">1</span>
+		<span class="attribute">this.z</span> = ((<span class="attribute">this.point</span> &amp; <span class="attribute">bit24mask</span>) &gt;</span>&gt; 16) &amp;255;			//byte = UInt8; 255 = "11111111" 8bit Bitmask
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>get rid of the upper bits, then shift down:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">this</span>.y = ((<span class="keyword">this</span>.point &amp; bit24mask) &gt;&gt;  <span class="number">8</span>) &amp;<span class="number">255</span>;			<span class="comment">//alternative: var y = (this.point -= (z &lt;&lt; 16)) &gt;&gt; 8;</span>
+		<span class="keyword">this</span>.x = ((<span class="keyword">this</span>.point &amp; bit24mask)     ) &amp;<span class="number">255</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Todo: read sign from Bit 30(x),29(y), 28(z)
+read sign-bits put at the front of the 32bits; x being closer to the Most Significant Bit position</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="keyword">if</span>( <span class="keyword">this</span>.point &amp; (<span class="number">1</span>&lt;<span class="xml"><span class="tag">&lt;<span class="title">30)</span> ){
+			<span class="attribute">this.x</span> = <span class="attribute">-this.x</span>;
+		}
+		<span class="attribute">if</span>( <span class="attribute">this.point</span> &amp; (<span class="attribute">1</span>&lt;&lt;<span class="attribute">29</span>) ){
+			<span class="attribute">this.y</span> = <span class="attribute">-this.y</span>;
+		}
+		<span class="attribute">if</span>( <span class="attribute">this.point</span> &amp; (<span class="attribute">1</span>&lt;&lt;<span class="attribute">28</span>) ){
+			<span class="attribute">this.z</span> = <span class="attribute">-this.z</span>;
+		}
+		<span class="attribute">var</span> <span class="attribute">retstring</span> = '[<span class="attribute">x:</span> '+<span class="attribute">this.x</span>+', <span class="attribute">y:</span> '+<span class="attribute">this.y</span>+', <span class="attribute">z:</span> '+<span class="attribute">this.z</span>+']';
+		<span class="attribute">if</span>( <span class="attribute">typeof</span> <span class="attribute">isRetstring</span> !=<span class="value">=</span> "<span class="attribute">undefined</span>" &amp;&amp; <span class="attribute">true</span> =<span class="value">==</span> <span class="attribute">Boolean</span>(<span class="attribute">isRetstring</span>) ){
+			<span class="attribute">return</span> <span class="attribute">retstring</span>;
+		}<span class="attribute">else</span>{
+			<span class="attribute">console.log</span>( <span class="attribute">retstring</span> );
+			<span class="attribute">return</span> <span class="attribute">this.point</span>;
+		}
+	}
+
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p><code>toArray</code>: returns an 1d array containing x,y,z cartesian coordinates</p>
+<pre><code>@return array {Array} 1D array containing vector values x,y,z</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	vectorop._Vector.prototype.toArray = <span class="keyword">function</span>(){
+		<span class="keyword">return</span> [ <span class="keyword">this</span>.x, <span class="keyword">this</span>.y, <span class="keyword">this</span>.z ];
+	}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p><code>mul</code>: calculates the vector product between the pertaining vector instance and a vector passed as argument</p>
 <pre><code>@param v2 {Vector} second Vector
@@ -672,11 +761,11 @@ this.z = -this.z;
         </li>
         
         
-        <li id="section-35">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p><code>div</code>: calculates the division between the pertaining vector instance and a vector passed as argument</p>
 <pre><code>@param v2 {Vector} second Vector
@@ -696,11 +785,11 @@ this.z = -this.z;
         </li>
         
         
-        <li id="section-36">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p><code>dot</code>: calculates the dot product between the pertaining vector instance and a vector passed as argument</p>
 <pre><code>@param v2 {Vector} second Vector
@@ -718,11 +807,11 @@ this.z = -this.z;
         </li>
         
         
-        <li id="section-37">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p><code>cross</code>: calculates the cross product between the pertaining vector instance and a vector passed as argument<br>The cross product can be defined as the determinant of a suitable 3×3 matrix (See: <em>Sarrus rule</em>)
 The cross product is anticommutative, implying negative numbers.
@@ -744,11 +833,11 @@ Calculating the cross product with the current implementation is possible only i
         </li>
         
         
-        <li id="section-38">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p><code>dotcross</code>: calculates the scalar triple product between the pertaining vector instance and two vector passed as argument<br>The result of the scalar triple product may be negative and can thus not be handled by the current implementation.<br>The scalar value can be thought of as the volume V of a parallelepiped, spanned by the three given vector instances </p>
 <pre><code>@param v2 {Vector} second Vector
@@ -766,11 +855,11 @@ Calculating the cross product with the current implementation is possible only i
         </li>
         
         
-        <li id="section-39">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p><code>abs</code>, <code>length{attr}</code>, <code>len</code>: calculates the magnitude or length of the pertaining vector instance</p>
 <pre><code>@return point {Int} 32bit number containing x,y,z 3D coordinates as 8bit integers</code></pre>
@@ -789,11 +878,11 @@ Calculating the cross product with the current implementation is possible only i
         </li>
         
         
-        <li id="section-40">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p><code>unit</code>,<code>norm</code>: calculates a normalized or unit vector of the pertaining vector instance and a passed normalization factor
 Note: By necessity, floating point numbers are required and thus <code>unit</code> is incompatible with the current implementation</p>
@@ -814,11 +903,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-41">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>no argument passed: normalize by the own length</p>
 
@@ -836,11 +925,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-42">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p><code>unit</code>,<code>norm</code>: calculates a normalized or unit vector</p>
 <pre><code>@param v1 {Vector} Vector object to be normalized
@@ -861,11 +950,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-43">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>no argument passed: normalize by the own length</p>
 
@@ -883,11 +972,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-44">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p><code>unit</code>,<code>norm</code>: copies the pertaining Vector object</p>
 <pre><code>@return vector {Object} _Vector object containing 8bit 3D coordinates</code></pre>
@@ -901,11 +990,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-45">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p><code>min</code>: calculates the minimum vector coordinates between two vectors passed as argument</p>
 <pre><code>@param v1 {Vector} first Vector object
@@ -928,11 +1017,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-46">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p><code>min</code>: calculates the minimum vector coordinates of the pertaining v instance and a Vector passed as argument</p>
 <pre><code>@param v1 {Vector} first Vector object
@@ -953,11 +1042,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-47">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p><code>max</code>: calculates the maximum vector coordinates between two Vectors passed as argument</p>
 <pre><code>@param v1 {Vector} first Vector object
@@ -980,11 +1069,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-48">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p><code>max</code>: calculates the maximum vector coordinates of the pertaining Vector instance and a Vector passed as argument</p>
 <pre><code>@param v1 {Vector} first Vector object
@@ -1005,11 +1094,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-49">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p><code>deg</code>,<code>spherical</code>: calculates the spherical values of the pertaining Vector instance, or sets the coordinates when <code>r,p,t (radius, phi, theta)</code> is passed</p>
 <pre><code>@param r {Vector} r, the radius or radial distance 
@@ -1037,17 +1126,18 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
 			<span class="attribute">return</span> <span class="attribute">new</span> <span class="attribute">vectorop.Vector</span>(<span class="attribute">x</span>,<span class="attribute">y</span>,<span class="attribute">z</span>);
 		}
 	}
+	
 
 </span></pre></div></div>
             
         </li>
         
         
-        <li id="section-50">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p><code>sph2cart</code>,<code>fromSpherical</code>:  calculates the carthesian coordinate values <code>x,y,z</code> of the spherical coordinates passed as <code>r,p,t (radius, phi, theta)</code></p>
 <pre><code>@param r {Vector} r, the radius or radial distance 
@@ -1069,11 +1159,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-51">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p><code>rot</code>: rotates the pertaining vector instance given the specified rotation angles of each axis<br>See: <a href="http://stackoverflow.com/questions/5081842/3d-z-y-x-rotation-of-vector">http://stackoverflow.com/questions/5081842/3d-z-y-x-rotation-of-vector</a></p>
 <pre><code>@param degx {Int} angle of rotation around the x-axis
@@ -1088,11 +1178,11 @@ Note: By necessity, floating point numbers are required and thus <code>unit</cod
         </li>
         
         
-        <li id="section-52">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Not implemented due to the current lack of floting number support</p>
 
