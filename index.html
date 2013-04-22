@@ -282,8 +282,8 @@
 
 <!-- example{ -->
 <div class="vector-js-gist">
-<div class="gist-file">
-    <div class="gist-data">
+<div class="">
+    <div class="">
       <ul>
         <li>
         <p>Create a new vector</p>
@@ -296,14 +296,20 @@
     <ul>
       <li>
         <p>Perform basic vector arithmetics</p>
-        <pre class="prettyprint lang-javascript">    var a = vectorop.Vector(0, 3, 0);
-    var b = vectorop.Vector(2, 0, 1);
-    var c = vectorop.Vector(1, 0, 1);
-    var d = vectorop.Vector(a + b - c);
-    +d
-    //> [x: 1, y: 3, z: 0]
+        <pre class="prettyprint lang-javascript">
+    if (typeof Vector !== 'undefined'){
+    	throw new Error("Vector object already exists in current scope!")
+    }else with(vectorop){    
+        var a = Vector(0, 3, 0);
+        var b = Vector(2, 0, 1);
+        var c = Vector(1, 0, 1);
+        var d = Vector(a + b - c);
+        +d
+        //> [x: 1, y: 3, z: 0]
+    }
     
-    var scalarf = 1.3;
+    var d = new vectorop.Vector(1, 2, 3);
+    var scalarf = 2.3;
     var e = vectorop.Vector(d * scalarf);
     delete e; // delete the vector instance 'e'
     
@@ -324,7 +330,7 @@
             <a href="http://github.com/robertkrimen">Lorenz Lo Sauer</a>
         &lt;<a href="mailto:lorenzlosauer(AT)gmail.com">lorenzlosauer (AT) gmail.com</a>&gt; 
 
-        <!-- AddThis Button BEGIN -->
+        <!-- AddThis Button BEGIN 
         <a class="addthis_button" href="http://www.addthis.com/bookmark.php?v=300&amp;pubid=ra-4e809cc4494aaf1c"><img src="http://s7.addthis.com/static/btn/v2/lg-share-en.gif" width="125" height="16" alt="Bookmark and Share" style="border:0"/></a>
         <script type="text/javascript">var addthis_config = {"data_track_addressbar":true};</script>
         <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-4e809cc4494aaf1c"></script>
@@ -445,19 +451,31 @@
                 <td><div class="resultarrow1">&rarr;</div></td>
                 <td>1st Vector</td>
                 <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector1" class="in-vector" type="text" value="1,2,3" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
-                <td>&nbsp;</td>
+                <td style="width:10%">
+                  <div name="relvectormagnitude" class="progress progress-success" style="-webkit-transform:rotate(-90deg); height:8px; border-radius:3px; margin-bottom:0px;">
+                  <div class="bar" style="width: 60%"></div>
+                  </div>
+              </td>
               </tr>
               <tr>
                 <td><div class="resultarrow2">&rarr;</div></td>
                 <td>2nd Vector</td>
                 <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector2" class="in-vector" type="text" value="4,5,10" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
-                <td>&nbsp;</td>
+                <td style="width:10%">
+                  <div name="relvectormagnitude" class="progress progress-success" style="-webkit-transform:rotate(-90deg); height:8px; border-radius:3px; margin-bottom:0px;">
+                  <div class="bar" style="width: 60%"></div>
+                  </div>
+              </td>
               </tr>
               <tr>
                 <td><div class="resultarrow3">&rarr;</div></td>
                 <td>3rd Vector</td>
                 <td><select class="vectorop"><option>+</option><option>-</option></select><input id="testvector3" class="in-vector" type="text" value="8,54,22" pattern="([0-9]{1,3},){2,3}[0-9]{1,3}[,]?" required></td>
-                <td>&nbsp;</td>
+                <td style="width:10%">
+                  <div name="relvectormagnitude" class="progress progress-success" style="-webkit-transform:rotate(-90deg); height:8px; border-radius:3px; margin-bottom:0px;">
+                  <div class="bar" style="width: 60%"></div>
+                  </div>
+              </td>
               </tr>
               <tr>
                 <td></td>
@@ -469,7 +487,8 @@
                 <td><div class="resultarrow4">&rarr;</div></td>
                 <td><strong>Result</strong></td>
                 <td><input id="calcResult" type="text" value=""></td>
-                <td>&nbsp;</td>
+                <td style="width:10%">&nbsp;
+              </td>
               </tr>
             </table>
             <div class="script">
