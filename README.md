@@ -1,4 +1,5 @@
-vector-js
+<img src="http://lsauer.github.com/vector-js/res/img/logo_vector-js.png" style="border:0px; margin:10px; margin-right:30px; float:left; zoom:0.6;">
+**vector-js**
 =========
 
 **vector-op.js** is a small module to facilitate limited 3D vector arithmetics based on unsigned 8 bit integers (`UInt8`).
