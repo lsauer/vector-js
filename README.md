@@ -2,12 +2,12 @@
 **vector-js**
 =========
 
-**vector-op.js** is a small module to facilitate limited 3D vector arithmetics based on unsigned 8 bit integers (`UInt8`).
+**vector.js** is a small module to facilitate limited 3D vector arithmetics based on unsigned 8 bit integers (`UInt8`).
 The module emulates operator overloading in JavaScript and show its limitations in the context of an included tutorial and well documented sources.  
 
 
-Check out the [documentation](http://lsauer.github.com/vector-js/vector-op.html) to learn more about using and 
-extending *vector-js*
+See the [documentation](http://lsauer.github.com/vector-js/vector-op.html) to learn more about using and 
+extending *vector-js*.
 
 ## Demo
 
@@ -100,7 +100,7 @@ If you use *node.js* and `require` you can include the file via:
 
 ## License
 
-*vectorop.js* is released under the MIT license.
+*vector.js* is released under the MIT license.
 
 ## See also
 
